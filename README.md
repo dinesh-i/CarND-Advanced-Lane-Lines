@@ -63,10 +63,11 @@ This is the first step in the pipeline to ensure that the given image is correct
 I defined the function "warp_image" to apply perpective transform on the lane portion of the image and warp the image. I referred to one of the references from the article https://medium.com/@vamsiramakrishnan/robust-lane-finding-using-python-open-cv-63eb66fa2616 to understand how to play around with the source pixel values. 
 
 Below are the pixes values I have chosed as source points for perspective transform:
-[200,660],[1200,660],[800,480],[540,480]
+[200,660],[1200,660],[800,480],[540,480].
+
 For Destination points, I have chosen the four corners of the image based on the image size.
 
-Applying the warping step helped me to focus only on the lane area of the image when I proceeded further with color, gradient threshold steps.
+Applying the warping step earlier in the pipeline helped me to focus only on the lane area of the image when I proceeded further with color and gradient threshold steps.
 
 Test Image                 |  Warped Image
 :-------------------------:|:-------------------------:
@@ -85,14 +86,15 @@ Direction          |         S Channel Image                |  H Channel Image |
 :-------------------------:|:------------------------:|:-------------------------:|:-------------------------:
 ![alt text][image8]       |  ![alt text][image13]    |![alt text][image11]       |  ![alt text][image7]    |
 
-I found that S channel was promising to detect lanes in most of the cases whereas magnitude and direction images were noisy in most of the cases. After trying out different combinations, I skipped magnitude & direction and used the following code to derive the combination of color and gradient thresholds:
+I found that S channel was promising to detect lanes in most of the cases whereas direction images were noisy in most of the cases. After trying out different combinations, I skipped magnitude & direction and used the following code to derive the combination of color and gradient thresholds:
+
     | combined[((gradx == 1) & (grady == 1)) | ((saturation_binary == 1) & (hue_binary == 1))] = 1 |
 
 #### Apply sliding window search, fit a polynomial and highlight the lanes
 I applied sliding window search(Refer the method sliding_window_search in cell#9) to identify the lanes. Generated a histogram of the binary thresholded image and used the following values for the sliding window search:
-number of windows = 9
-Min no.of pixels to recenter window = 50
-Width of the window = 100
+- number of windows = 9
+- Min no.of pixels to recenter window = 50
+- Width of the window = 100
 
 Once the left and right line pixels are identified, I applied second order polynomial function using np.polyfit function.
 
