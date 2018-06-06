@@ -19,15 +19,17 @@ The goals / steps of this project are the following:
 [image4]: ./output_images/test1_h_image.jpg "Hue Image"
 [image5]: ./output_images/test1_s_image.jpg "Saturation Image"
 [image6]: ./output_images/visualized_lane.jpg "Visualized Lane Image"
-[image6]: ./output_images/warped_lane_image_combined.jpg "Combined Result of differenrt channels"
-[image6]: ./output_images/warped_lane_image_dir_binary.jpg "Direction"
-[image6]: ./output_images/warped_lane_image_gradx.jpg "Gradient X Image"
-[image6]: ./output_images/warped_lane_image_grady.jpg "Gradient Y Image"
-[image6]: ./output_images/warped_lane_image_hue_binary.jpg "Hue Image"
-[image6]: ./output_images/warped_lane_image_mag_binary.jpg "Magnitude Image"
-[image6]: ./output_images/warped_lane_image_saturation_binary.jpg "Saturation Image"
-[image6]: ./output_images/warped_lane_image.jpg "Warped Lane Image"
-[image6]: ./output_images/grad_thresh_image_cv2.jpg "Gradient Threshold Image"
+[image7]: ./output_images/warped_lane_image_combined.jpg "Combined Result of differenrt channels"
+[image8]: ./output_images/warped_lane_image_dir_binary.jpg "Direction"
+[image9]: ./output_images/warped_lane_image_gradx.jpg "Gradient X Image"
+[image10]: ./output_images/warped_lane_image_grady.jpg "Gradient Y Image"
+[image11]: ./output_images/warped_lane_image_hue_binary.jpg "Hue Image"
+[image12]: ./output_images/warped_lane_image_mag_binary.jpg "Magnitude Image"
+[image13]: ./output_images/warped_lane_image_saturation_binary.jpg "Saturation Image"
+[image14]: ./output_images/warped_lane_image.jpg "Warped Lane Image"
+[image15]: ./output_images/grad_thresh_image_cv2.jpg "Gradient Threshold Image"
+[image16]: ./test_images/test3.jpg "Test Image"
+[image17]: ./output_images/lane_highlighted_image.jpg "Lane Highlighted Image"
 
 [video1]: ./project_video_output.mp4 "Project output video"
 
@@ -42,7 +44,7 @@ The file "advanced_lane_finder.ipynb" contains the complete source code of all t
 
 #### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
+The code for this step is contained in the second code cell of the IPython notebook located in "advanced_lane_finder.ipynb".  
 
 I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
 
@@ -52,78 +54,81 @@ Distorted Image             |  Undistorted Image
 :-------------------------:|:-------------------------:
 ![alt text][image1]        |  ![alt text][image2]
 
-
 ### Pipeline (single images)
 
-#### 1. Provide an example of a distortion-corrected image.
+#### Distortion corrected image
+This is the first step in the pipeline to ensure that the given image is corrected for distortion so that the rest of the steps in the pipeline can work on a undistorted image. Steps followed are same as outlined in the section Camera Calibration"
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+#### Apply Perspective Transform
+I defined the function "warp_image" to apply perpective transform on the lane portion of the image and warp the image. I referred to one of the references from the article https://medium.com/@vamsiramakrishnan/robust-lane-finding-using-python-open-cv-63eb66fa2616 to understand how to play around with the source pixel values. 
 
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+Below are the pixes values I have chosed as source points for perspective transform:
+[200,660],[1200,660],[800,480],[540,480]
+For Destination points, I have chosen the four corners of the image based on the image size.
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+Applying the warping step helped me to focus only on the lane area of the image when I proceeded further with color, gradient threshold steps.
 
-![alt text][image3]
+Test Image                 |  Warped Image
+:-------------------------:|:-------------------------:
+![alt text][image16]       |  ![alt text][image14]
 
-#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+#### Apply Color and Gradient Threshold
 
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
-```
+I applied various color and gradient thresholds and tried out different threshold values. Images below shows the impact to the image when various color and gradient thresholds are applied:
 
-This resulted in the following source and destination points:
+Warped Lane Image          |  Gradient X Image        |Gradient Y Image                |  Magnitude Image |
+:-------------------------:|:------------------------:|:-------------------------:|:-------------------------:
+![alt text][image14]       |  ![alt text][image9]    |![alt text][image10]       |  ![alt text][image12]    |
 
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+Direction          |         S Channel Image                |  H Channel Image | Combined Threshold and Gradient|
+:-------------------------:|:------------------------:|:-------------------------:|:-------------------------:
+![alt text][image8]       |  ![alt text][image13]    |![alt text][image11]       |  ![alt text][image7]    |
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+I found that S channel was promising to detect lanes in most of the cases whereas magnitude and direction images were noisy in most of the cases. After trying out different combinations, I skipped magnitude & direction and used the following code to derive the combination of color and gradient thresholds:
+    | combined[((gradx == 1) & (grady == 1)) | ((saturation_binary == 1) & (hue_binary == 1))] = 1 |
 
-![alt text][image4]
+#### Apply sliding window search, fit a polynomial and highlight the lanes
+I applied sliding window search(Refer the method sliding_window_search in cell#9) to identify the lanes. Generated a histogram of the binary thresholded image and used the following values for the sliding window search:
+number of windows = 9
+Min no.of pixels to recenter window = 50
+Width of the window = 100
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+Once the left and right line pixels are identified, I applied second order polynomial function using np.polyfit function.
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+I also implemented the method "get_radius_of_curvature" to compute the radius of curvature of the left and right lanes in meter. The final image with the lanes highlighted is shown below:
 
-![alt text][image5]
+Highlight Left and Right Lanes|
+:-------------------------:
+![alt text][image6]      |
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+#### Highlight Lanes in the original image and update details on radius of curvature and distance from lane centre
+I implemented the method "highlight_lane"(Cell#10) to apply the image where the lane area is highlighted on the original image. 
+The method "get_lane_center_info"(Cell #11) computer the position of the center of the car based on the pixel position of the left and right lanes. It compares this value against the horizontal center position of the image and checks how far the vehicle is from the center of the road in meter.
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+#### Pipeline
+The method "pipeline" (Cell# 16) orchestrates all the above steps in order to produce the following result:
 
-![alt text][image6]
+Unwarped Image with lanes highlighted|
+:-------------------------:
+![alt text][image17]      |
+
 
 ---
 
 ### Pipeline (video)
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+#### The above pipeline was applied to the project_video.mp4 file and it worked pretty well to highlight the lanes).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
 ### Discussion
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+This pipeline works well in well light conditions and light shadows. It should be improved further to handle situations like dark shadows, poor visibility etc. Need to check on different color and gradient thresholds to handle such scenarios.
 
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
